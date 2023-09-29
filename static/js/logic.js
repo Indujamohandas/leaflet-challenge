@@ -1,22 +1,20 @@
 let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
-//Create the initial map
+//initial map
 let myMap = L.map("map", {
   center: [37.09, -95.71],
   zoom: 5
 });
 
-// Add a tile layer.
+// tile layer.
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(myMap);
 
-//Define a markerSize() function that will give each earthquake a marker size relative to the magnitude of the earthquake.
 function markerSize(magnitude) {
   return magnitude * 15000;
 }
 
-//Define a markerFill() function that will color the markers based on the depth of the earthquake.
 function markerFill(depth) {
   
   if (depth < 20){
@@ -40,25 +38,17 @@ function markerFill(depth) {
 }
 
 d3.json(queryUrl).then(function (data) {
-    
-    //Log the data into the console to ensure captrure
     console.log(data.features);
     //Assign the features dictionary to a var
     let featureData = data.features;
 
-    //Loop to add a circle marker to each earthquake in the dataset
     for (let i = 0; i < featureData.length; i++) {
       
-      //assign data to variables
       const coordinates = featureData[i].geometry.coordinates;
       const magnitude = featureData[i].properties.mag;
-
-      // Create a LatLng object for the circle center.
       const latlng = L.latLng(coordinates[1], coordinates[0]);
       
-      
-      //Create a circle marker on the map, bind data onto the popup to provide information about the earthquake recorded
-    let eachMarker = L.circle(latlng, {
+      let eachMarker = L.circle(latlng, {
         fillOpacity: 0.75,
         color: markerFill(coordinates[2]),
         fillColor: markerFill(coordinates[2]),
@@ -66,14 +56,11 @@ d3.json(queryUrl).then(function (data) {
       }).bindPopup(`<h3>${featureData[i].properties.title}</h3><hr><p>${new Date(featureData[i].properties.time)}</p><p>Depth: ${coordinates[2]}</p>`).addTo(myMap);
     }
 
-
-    //Example for a legend used as a basis for this legend
-    //https://codepen.io/haakseth/pen/KQbjdO
     var legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function(myMap) {
       var div = L.DomUtil.create("div", "legend");
-      //Use the colors used in markerFill() function
+    
       div.innerHTML += '<i style="background: #9BD770"></i><span>>10</span><br>';
       div.innerHTML += '<i style="background: #F1F791"></i><span>10-30</span><br>';
       div.innerHTML += '<i style="background: #FDE281"></i><span>30-50</span><br>';
@@ -85,7 +72,6 @@ d3.json(queryUrl).then(function (data) {
 
       return div;
 };
-//Add the legend to map
 legend.addTo(myMap);
 
 });
